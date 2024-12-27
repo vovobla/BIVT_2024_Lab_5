@@ -378,32 +378,18 @@ public class Program
             }
         }
 
-        //   if (maxIndex != minIndex)
-        //   {
-        //   Удаляем столбцы в порядке, чтобы избежать смещения индексов
-        //       int firstIndexToRemove = Math.Max(maxIndex, minIndex);
-        //  int secondIndexToRemove = Math.Min(maxIndex, minIndex);
-        //
-        // RemoveColumn(ref matrix, firstIndexToRemove);
-        // RemoveColumn(ref matrix, secondIndexToRemove);
-        // }
-        //    else
-        //  {
-        //  RemoveColumn(ref matrix, minIndex);
-        //}
+        if (maxIndex != minIndex)
+        {
+            int firstIndexToRemove = Math.Max(maxIndex, minIndex);
+            int secondIndexToRemove = Math.Min(maxIndex, minIndex);
 
-        if (maxIndex != minIndex && maxIndex > minIndex)
-        {
-            RemoveColumn(ref matrix, maxIndex);
-            RemoveColumn(ref matrix, minIndex);
-        }
-        else if (maxIndex != minIndex && maxIndex < minIndex)
-        {
-            RemoveColumn(ref matrix, minIndex);
-            RemoveColumn(ref matrix, maxIndex);
+            RemoveColumn(ref matrix, firstIndexToRemove);
+            RemoveColumn(ref matrix, secondIndexToRemove);
         }
         else
+        {
             RemoveColumn(ref matrix, minIndex);
+        }
         // end
     }
 
