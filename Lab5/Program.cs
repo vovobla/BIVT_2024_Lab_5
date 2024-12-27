@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
+using static Program;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class Program
@@ -138,29 +139,10 @@ public class Program
         int maxIndexA = FindMaxIndex(A);
         int maxIndexB = FindMaxIndex(B);
 
-        // Определяем, какой массив изменять
         double[] targetArray = (A.Length - maxIndexA > B.Length - maxIndexB) ? A : B;
         int targetMaxIndex = (targetArray == A) ? maxIndexA : maxIndexB;
 
-        double sum = 0;
-        int count = 0;
-
-        for (int i = targetMaxIndex + 1; i < targetArray.Length; i++)
-        {
-            sum += targetArray[i];
-            count++;
-        }
-
-        double average = sum / count;
-        double max = targetArray[targetMaxIndex];
-
-        for (int i = 0; i < targetArray.Length; i++)
-        {
-            if (targetArray[i] == max)
-            {
-                targetArray[i] = average;
-            }
-        }
+        UpdateWithAverage(targetArray, targetMaxIndex);
         //end
     }
 
@@ -176,6 +158,29 @@ public class Program
             }
         }
         return maxIndex;
+    }
+
+    public void UpdateWithAverage(double[] array, int indexMax)
+    {
+        double sum = 0;
+        int count = 0;
+
+        for (int i = indexMax + 1; i < array.Length; i++)
+        {
+            sum += array[i];
+            count++;
+        }
+
+        double average = count > 0 ? sum / count : 0; 
+        double max = array[indexMax];
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (array[i] == max)
+            {
+                array[i] = average;
+            }
+        }
     }
 
     public void Task_2_3(ref int[,] B, ref int[,] C)
@@ -300,25 +305,8 @@ public class Program
     {
         // code here
         // create and use SortArrayPart(array, startIndex);
-        int maxIndexA = 0;
-
-        for (int i = 1; i < A.Length; i++)
-        {
-            if (A[maxIndexA] < A[i])
-            {
-                maxIndexA = i;
-            }
-        }
-
-        int maxIndexB = 0;
-
-        for (int i = 1; i < B.Length; i++)
-        {
-            if (B[maxIndexB] < B[i])
-            {
-                maxIndexB = i;
-            }
-        }
+        int maxIndexA = FindMax(A);
+        int maxIndexB = FindMax(B);
 
         SortArrayPart(ref A, maxIndexA);
         SortArrayPart(ref B, maxIndexB);
@@ -390,19 +378,32 @@ public class Program
             }
         }
 
-        if (maxIndex != minIndex)
-        {
-            // Удаляем столбцы в порядке, чтобы избежать смещения индексов
-            int firstIndexToRemove = Math.Max(maxIndex, minIndex);
-            int secondIndexToRemove = Math.Min(maxIndex, minIndex);
+        //   if (maxIndex != minIndex)
+        //   {
+        //   Удаляем столбцы в порядке, чтобы избежать смещения индексов
+        //       int firstIndexToRemove = Math.Max(maxIndex, minIndex);
+        //  int secondIndexToRemove = Math.Min(maxIndex, minIndex);
+        //
+        // RemoveColumn(ref matrix, firstIndexToRemove);
+        // RemoveColumn(ref matrix, secondIndexToRemove);
+        // }
+        //    else
+        //  {
+        //  RemoveColumn(ref matrix, minIndex);
+        //}
 
-            RemoveColumn(ref matrix, firstIndexToRemove);
-            RemoveColumn(ref matrix, secondIndexToRemove);
-        }
-        else
+        if (maxIndex != minIndex && maxIndex > minIndex)
         {
+            RemoveColumn(ref matrix, maxIndex);
             RemoveColumn(ref matrix, minIndex);
         }
+        else if (maxIndex != minIndex && maxIndex < minIndex)
+        {
+            RemoveColumn(ref matrix, minIndex);
+            RemoveColumn(ref matrix, maxIndex);
+        }
+        else
+            RemoveColumn(ref matrix, minIndex);
         // end
     }
 
@@ -897,42 +898,31 @@ public class Program
         // code here
         // use FindSequence(array, A, B); from Task_2_28a or entirely Task_2_28a
         // A and B - start and end indexes of elements from array for search
-        int nFirst = 0;
-        int maxIntervals = first.Length * (first.Length - 1) / 2;
-        answerFirst = new int[maxIntervals, 2];
-
-        for (int i = 0; i < first.Length; i++)
-        {
-            for (int j = i + 1; j < first.Length; j++)
-            {
-                if (FindSequence(first, i, j) != 0)
-                {
-                    answerFirst[nFirst, 0] = i; 
-                    answerFirst[nFirst, 1] = j; 
-                    nFirst++;
-                }
-            }
-        }
-
-        int nSecond = 0;
-        answerSecond = new int[maxIntervals, 2];
-
-        for (int i = 0; i < second.Length; i++)
-        {
-            for (int j = i + 1; j < second.Length; j++)
-            {
-                if (FindSequence(second, i, j) != 0) 
-                {
-                    answerSecond[nSecond, 0] = i; 
-                    answerSecond[nSecond, 1] = j; 
-                    nSecond++;
-                }
-            }
-        }
-
-        answerFirst = ResizeArray(answerFirst, nFirst);
-        answerSecond = ResizeArray(answerSecond, nSecond);
+        answerFirst = FindSequences(first, out int nFirst);
+        answerSecond = FindSequences(second, out int nSecond);
         // end
+    }
+
+    public int[,] FindSequences(int[] array, out int count)
+    {
+        int maxIntervals = array.Length * (array.Length - 1) / 2;
+        int[,] sequences = new int[maxIntervals, 2];
+        count = 0;
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            for (int j = i + 1; j < array.Length; j++)
+            {
+                if (FindSequence(array, i, j) != 0)
+                {
+                    sequences[count, 0] = i;
+                    sequences[count, 1] = j;
+                    count++;
+                }
+            }
+        }
+
+        return ResizeArray(sequences, count);
     }
 
     private int[,] ResizeArray(int[,] original, int newSize)
@@ -952,53 +942,34 @@ public class Program
         // code here
         // use FindSequence(array, A, B); from Task_2_28a or entirely Task_2_28a or Task_2_28b
         // A and B - start and end indexes of elements from array for search
-        int maxLengthFirst = 0;
-        int startFirst = 0;
-        int endFirst = 0;
-
-        for (int i = 0; i < first.Length; i++)
-        {
-            for (int j = i + 1; j < first.Length; j++)
-            {
-                if (FindSequence(first, i, j) != 0)
-                {
-                    int length = j - i + 1;
-
-                    if (length > maxLengthFirst)
-                    {
-                        maxLengthFirst = length;
-                        startFirst = i;
-                        endFirst = j;
-                    }
-                }
-            }
-        }
-
-        int maxLengthSecond = 0;
-        int startSecond = 0;
-        int endSecond = 0;
-
-        for (int i = 0; i < second.Length; i++)
-        {
-            for (int j = i + 1; j < second.Length; j++)
-            {
-                if (FindSequence(second, i, j) != 0)
-                {
-                    int length = j - i + 1;
-
-                    if (length > maxLengthSecond) 
-                    {
-                        maxLengthSecond = length;
-                        startSecond = i;
-                        endSecond = j;
-                    }
-                }
-            }
-        }
-
-        answerFirst = new int[] {startFirst, endFirst};
-        answerSecond = new int[] {startSecond, endSecond};
+        answerFirst = FindLongestSequence(first);
+        answerSecond = FindLongestSequence(second);
         // end
+    }
+    public int[] FindLongestSequence(int[] array)
+    {
+        int maxLength = 0;
+        int start = 0, end = 0;
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            for (int j = i + 1; j < array.Length; j++)
+            {
+                if (FindSequence(array, i, j) != 0)
+                {
+                    int length = j - i + 1;
+
+                    if (length > maxLength)
+                    {
+                        maxLength = length;
+                        start = i;
+                        end = j;
+                    }
+                }
+            }
+        }
+
+        return new int[] { start, end };
     }
     #endregion
 
